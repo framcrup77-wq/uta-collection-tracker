@@ -533,13 +533,6 @@ async function analyzeCard(file){
     <div class="ai-pulse"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
     <span style="font-size:13px;color:var(--text2)">กำลังอ่านข้อมูลบนการ์ด...</span></div>`;
     try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:1000,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:b64}},
-          {type:'text',text:'Analyze this One Piece card game card image. Extract: card number (like OP03-097), card name, set name, rarity (L/C/UC/R/SR/SEC/SP/OP/SA), and variant type (normal=regular print, foil=parallel foil/shiny, parallel=parallel non-foil, trr=treasure rare, sa=special anniversary). Return ONLY valid JSON: {"cardNumber":"","cardName":"","setName":"","rarity":"","variant":"normal","confidence":"high/medium/low"}. If not a card: {"error":"not a card"}.'}
-        ]}]
-      })});
       const data=await res.json();
       const text=data.content?.map(i=>i.text||'').join('')||'';
       let parsed; try{parsed=JSON.parse(text.replace(/```json|```/g,'').trim());}catch(e){parsed={error:'parse'};}
