@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uta Card Collection Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#C41E3A;--red2:#8B0000;--red-mid:#FF6B7A;
+  --gold:#D4AF37;--bg:#0A0A0F;--bg2:#12121A;--bg3:#1A1A25;--bg4:#22223A;
+  --text:#F5F0FF;--text2:#B8B0CC;--text3:#7A7090;
+  --border:#2A2A40;--border2:#3A3A55;
+  --foil-a:#a78bfa;--foil-b:#38bdf8;--foil-c:#f472b6;
+  --trr-a:#fde68a;--trr-b:#fbbf24;
+  --sa-a:#86efac;--sa-b:#34d399;
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.app{max-width:1100px;margin:0 auto;padding:0 16px 60px}
+
+.header{position:relative;padding:32px 0 24px;text-align:center;border-bottom:1px solid var(--border)}
+.header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:300px;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--gold),var(--red),transparent)}
+.header-badge{display:inline-block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;color:var(--gold);border:1px solid var(--gold);padding:4px 16px;border-radius:2px;margin-bottom:12px}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(24px,4vw,40px);font-weight:700;color:#fff;letter-spacing:2px;line-height:1.1}
+.header h1 span{color:var(--red-mid)}
+.header-sub{font-size:13px;color:var(--text3);margin-top:6px;letter-spacing:1px}
+
+.nav{display:flex;gap:2px;padding:16px 0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:6px;border:none;background:transparent;color:var(--text3);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--red2);color:#fff}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 16px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--red))}
+.stat-label{font-size:11px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:8px}
+.stat-num{font-family:'Cinzel',serif;font-size:30px;font-weight:700;color:#fff;line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+.progress-section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.progress-title{font-family:'Cinzel',serif;font-size:13px;color:var(--text2);letter-spacing:1px}
+.progress-pct{font-family:'Cinzel',serif;font-size:24px;font-weight:700;color:var(--gold)}
+.pbar-bg{background:var(--bg4);border-radius:999px;height:8px;overflow:hidden}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--red2),var(--red-mid),var(--gold));border-radius:999px;transition:width .8s ease}
+.pbar-labels{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text3)}
+
+.section-title{font-family:'Cinzel',serif;font-size:14px;letter-spacing:2px;color:var(--text2);margin:24px 0 16px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.fi{flex:1;min-width:130px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none}
+.fi:focus{border-color:var(--red)}
+
+/* VARIANT BADGES */
+.vbadge{display:inline-flex;align-items:center;gap:4px;font-size:9px;letter-spacing:.5px;padding:2px 7px;border-radius:999px;font-weight:700;white-space:nowrap}
+.vb-normal{background:#1a1a2e;color:#aaa;border:1px solid #333}
+.vb-foil{background:linear-gradient(90deg,#1a1035,#0a1a2a);color:#a78bfa;border:1px solid #6d28d9}
+.vb-parallel{background:linear-gradient(90deg,#1a0a20,#0a1a20);color:#f472b6;border:1px solid #9d174d}
+.vb-trr{background:linear-gradient(90deg,#1a1200,#1a0a00);color:#fbbf24;border:1px solid #92400e}
+.vb-sa{background:linear-gradient(90deg,#001a10,#001a1a);color:#34d399;border:1px solid #065f46}
+
+/* RARITY BADGES */
+.rbadge{display:inline-block;font-size:9px;letter-spacing:1px;padding:2px 8px;border-radius:999px;font-weight:600}
+.r-L{background:#1A1A2E;color:#64B5F6;border:1px solid #1565C0}
+.r-C{background:#1A2A1A;color:#81C784;border:1px solid #2E7D32}
+.r-UC{background:#1A1A2E;color:#CE93D8;border:1px solid #6A1B9A}
+.r-R{background:#2A1A00;color:#FFB74D;border:1px solid #E65100}
+.r-SR{background:#2A1500;color:#FF8A65;border:1px solid #BF360C}
+.r-SEC{background:#1A0A0A;color:#F48FB1;border:1px solid #880E4F}
+.r-SP{background:#1A0A1A;color:#CE93D8;border:1px solid #4A148C}
+.r-OP{background:#0A1A0A;color:#A5D6A7;border:1px solid #1B5E20}
+
+/* CARD GRID */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}
+.card-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.card-item:hover{border-color:var(--red);transform:translateY(-2px)}
+.card-item.owned{border-color:var(--gold)}
+.card-item.missing-card{opacity:.5}
+.card-item.v-foil{box-shadow:0 0 0 1px #6d28d9}
+.card-item.v-parallel{box-shadow:0 0 0 1px #9d174d}
+.card-item.v-trr{box-shadow:0 0 0 2px #92400e}
+.card-item.v-sa{box-shadow:0 0 0 1px #065f46}
+.card-img{width:100%;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,.05);position:relative}
+.card-img-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;height:100%}
+.foil-sheen{position:absolute;inset:0;background:linear-gradient(135deg,rgba(167,139,250,.15),transparent 50%,rgba(56,189,248,.1));pointer-events:none}
+.trr-sheen{position:absolute;inset:0;background:linear-gradient(135deg,rgba(251,191,36,.2),transparent 50%,rgba(253,230,138,.1));pointer-events:none}
+.sa-sheen{position:absolute;inset:0;background:linear-gradient(135deg,rgba(52,211,153,.15),transparent 50%,rgba(134,239,172,.1));pointer-events:none}
+.card-info{padding:10px}
+.card-num{font-size:10px;color:var(--text3);font-family:'Cinzel',serif;letter-spacing:1px}
+.card-name{font-size:12px;font-weight:600;color:var(--text);margin:2px 0;line-height:1.3}
+.card-set{font-size:10px;color:var(--text3);margin-bottom:4px}
+.owned-mark{position:absolute;top:6px;right:6px;width:20px;height:20px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2}
+.owned-mark i{font-size:11px;color:#000}
+.dup-badge{position:absolute;top:6px;left:6px;background:var(--red2);color:#fff;border-radius:999px;font-size:9px;padding:2px 6px;font-weight:600;z-index:2}
+
+/* VARIANT SELECTOR in modal */
+.var-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.var-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .2s;font-family:'Sarabun',sans-serif}
+.var-btn:hover{border-color:var(--red-mid)}
+.var-btn.selected{border-color:var(--gold);background:rgba(212,175,55,.1)}
+.var-btn .vname{font-size:12px;font-weight:600;color:var(--text);margin-top:4px}
+.var-btn .vprice{font-size:10px;color:var(--text3)}
+
+/* OWNED VARIANTS LIST */
+.ov-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.ov-left{display:flex;align-items:center;gap:8px}
+
+/* UPLOAD / MISC */
+.upload-area{border:2px dashed var(--border2);border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:20px;background:var(--bg2)}
+.upload-area:hover,.upload-area.drag{border-color:var(--red);background:rgba(196,30,58,.05)}
+#file-input{display:none}
+.analysis-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.analysis-label{font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.analysis-val{font-size:14px;color:var(--text);font-weight:500;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px}
+.analysis-img{width:100%;max-width:160px;aspect-ratio:3/4;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;margin:0 auto 16px;overflow:hidden}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;border:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-p{background:var(--red);color:#fff}.btn-p:hover{background:var(--red2)}
+.btn-s{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}.btn-s:hover{border-color:var(--red);color:var(--text)}
+.btn-g{background:var(--gold);color:#000}.btn-g:hover{opacity:.9}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.aw{background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:#D4AF37}
+.as{background:rgba(0,200,100,.1);border:1px solid rgba(0,200,100,.3);color:#4CAF50}
+.ai2{background:rgba(100,150,255,.1);border:1px solid rgba(100,150,255,.3);color:#7099FF}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:440px;overflow:hidden;max-height:92vh;overflow-y:auto}
+.modal-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
+.modal-title{font-family:'Cinzel',serif;font-size:14px;color:#fff;letter-spacing:1px}
+.modal-body{padding:20px}
+.modal-img{width:110px;aspect-ratio:3/4;margin:0 auto 16px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;overflow:hidden}
+.modal-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.modal-key{color:var(--text3)}.modal-val{color:var(--text);font-weight:500}
+.ai-pulse{display:flex;align-items:center;gap:12px;padding:16px;background:var(--bg3);border-radius:8px;margin:12px 0}
+.ai-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1s infinite}
+.ai-dot:nth-child(2){animation-delay:.2s}.ai-dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--text);z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(0,200,100,.4)}.toast.warning{border-color:rgba(212,175,55,.4)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state i{font-size:48px;margin-bottom:16px;display:block}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-badge">One Piece Card Game</div>
+    <h1>UTA <span>Collection</span></h1>
+    <p class="header-sub">Track · Collect · Complete</p>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+    <button class="nav-btn" onclick="showPage('collection')" id="nav-collection"><i class="ti ti-cards"></i> คอลเลกชัน</button>
+    <button class="nav-btn" onclick="showPage('missing')" id="nav-missing"><i class="ti ti-list-search"></i> การ์ดที่ขาด</button>
+    <button class="nav-btn" onclick="showPage('upload')" id="nav-upload"><i class="ti ti-upload"></i> อัปโหลดการ์ด</button>
+  </nav>
+  <div id="page-dashboard"></div>
+  <div id="page-collection" style="display:none"></div>
+  <div id="page-missing" style="display:none"></div>
+  <div id="page-upload" style="display:none"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// ===== VARIANT TYPES =====
+const VARIANTS = [
+  {id:'normal', label:'Normal',      icon:'🃏', cls:'vb-normal', sheen:'',          rarity_multi:1},
+  {id:'foil',   label:'Parallel Foil',icon:'✨', cls:'vb-foil',   sheen:'foil-sheen', rarity_multi:2},
+  {id:'parallel',label:'Parallel',   icon:'💎', cls:'vb-parallel',sheen:'foil-sheen', rarity_multi:2},
+  {id:'trr',    label:'Treasure Rare',icon:'👑', cls:'vb-trr',    sheen:'trr-sheen',  rarity_multi:4},
+  {id:'sa',     label:'Special Anniv.',icon:'🌟',cls:'vb-sa',     sheen:'sa-sheen',   rarity_multi:3},
+];
+
+// ===== CARD DATABASE (base cards × variants = 120 unique entries) =====
+const BASE_CARDS = [
+  {id:1, num:'OP03-097',name:'Uta',                   set:'Pillars of Strength',     rarity:'SR', date:'2022-12-09',emoji:'🎤',color:'#C41E3A', variants:['normal','foil','parallel','trr','sa']},
+  {id:2, num:'OP03-098',name:'Uta (1000-Year Rain)',   set:'Pillars of Strength',     rarity:'SR', date:'2022-12-09',emoji:'🎵',color:'#8B0000', variants:['normal','foil','parallel','trr']},
+  {id:3, num:'OP03-099',name:'Uta (Film Red)',         set:'Pillars of Strength',     rarity:'R',  date:'2022-12-09',emoji:'🎼',color:'#D4AF37', variants:['normal','foil','parallel']},
+  {id:4, num:'OP03-100',name:"Uta's Song",             set:'Pillars of Strength',     rarity:'UC', date:'2022-12-09',emoji:'🎶',color:'#6A1B9A', variants:['normal','foil']},
+  {id:5, num:'OP03-101',name:'Uta Concert',            set:'Pillars of Strength',     rarity:'C',  date:'2022-12-09',emoji:'🎸',color:'#1565C0', variants:['normal','foil']},
+  {id:6, num:'EB01-031',name:'Uta',                   set:'Extra Booster Memorial',   rarity:'SEC',date:'2023-03-10',emoji:'⭐',color:'#880E4F', variants:['normal','foil','parallel','trr','sa']},
+  {id:7, num:'EB01-032',name:'Uta (Wanted)',           set:'Extra Booster Memorial',   rarity:'SP', date:'2023-03-10',emoji:'📜',color:'#4A148C', variants:['normal','foil','parallel','sa']},
+  {id:8, num:'PRB01-005',name:'Uta Promo',             set:'Tournament Pack',          rarity:'OP', date:'2023-06-01',emoji:'🏆',color:'#1B5E20', variants:['normal','sa']},
+  {id:9, num:'ST13-001',name:'Uta',                   set:'ST13 UTA Starter',         rarity:'L',  date:'2023-12-01',emoji:'👑',color:'#0D47A1', variants:['normal','foil','parallel','trr','sa']},
+  {id:10,num:'ST13-002',name:'Uta (Aggressive)',       set:'ST13 UTA Starter',         rarity:'UC', date:'2023-12-01',emoji:'⚡',color:'#1B5E20', variants:['normal','foil']},
+  {id:11,num:'ST13-003',name:'Uta (Defense)',          set:'ST13 UTA Starter',         rarity:'C',  date:'2023-12-01',emoji:'🛡️',color:'#4A148C', variants:['normal','foil']},
+  {id:12,num:'ST13-004',name:'Uta (Support)',          set:'ST13 UTA Starter',         rarity:'C',  date:'2023-12-01',emoji:'💫',color:'#1565C0', variants:['normal','foil']},
+  {id:13,num:'OP06-088',name:'Uta',                   set:'Wings of the Captain',     rarity:'SR', date:'2023-09-22',emoji:'🦋',color:'#C41E3A', variants:['normal','foil','parallel','trr','sa']},
+  {id:14,num:'OP06-089',name:'Uta (Alt Art)',          set:'Wings of the Captain',     rarity:'SR', date:'2023-09-22',emoji:'🌹',color:'#8B0000', variants:['normal','foil','parallel','trr']},
+  {id:15,num:'OP06-090',name:"Uta's Power",            set:'Wings of the Captain',     rarity:'R',  date:'2023-09-22',emoji:'✨',color:'#D4AF37', variants:['normal','foil','parallel']},
+  {id:16,num:'P-010',   name:'Uta (Special Promo)',    set:'Film Red Special',         rarity:'OP', date:'2022-08-06',emoji:'🎬',color:'#1B5E20', variants:['normal','sa']},
+  {id:17,num:'P-011',   name:'Uta Live',               set:'Film Red Special',         rarity:'OP', date:'2022-08-06',emoji:'🎤',color:'#1B5E20', variants:['normal','sa']},
+  {id:18,num:'OP08-099',name:'Uta',                   set:'Two Legends',              rarity:'SEC',date:'2024-03-01',emoji:'🌙',color:'#880E4F', variants:['normal','foil','parallel','trr','sa']},
+  {id:19,num:'OP08-100',name:'Uta (Full Art)',         set:'Two Legends',              rarity:'SP', date:'2024-03-01',emoji:'🌟',color:'#4A148C', variants:['normal','foil','parallel','sa']},
+  {id:20,num:'OP08-101',name:"Uta's Melody",           set:'Two Legends',              rarity:'R',  date:'2024-03-01',emoji:'🎼',color:'#E65100', variants:['normal','foil','parallel']},
+  {id:21,num:'OP09-088',name:'Uta (Concert Ver.)',     set:'Emperors in the New World',rarity:'SR', date:'2024-06-28',emoji:'🎺',color:'#C41E3A', variants:['normal','foil','parallel','trr']},
+  {id:22,num:'OP09-089',name:"Uta's Voice",            set:'Emperors in the New World',rarity:'R',  date:'2024-06-28',emoji:'🎙️',color:'#D4AF37', variants:['normal','foil','parallel']},
+  {id:23,num:'OP10-095',name:'Uta',                   set:'Road to the King',         rarity:'SR', date:'2024-09-27',emoji:'🌸',color:'#C41E3A', variants:['normal','foil','parallel','trr','sa']},
+  {id:24,num:'OP10-096',name:'Uta (New World)',        set:'Road to the King',         rarity:'R',  date:'2024-09-27',emoji:'🌊',color:'#D4AF37', variants:['normal','foil','parallel']},
+  {id:25,num:'SA-001',  name:'Uta (10th Anniv.)',      set:'Special Anniversary',      rarity:'SA', date:'2024-07-20',emoji:'🎊',color:'#34d399', variants:['normal','sa']},
+];
+
+// Generate all variant-card combos
+const UTA_CARDS = [];
+BASE_CARDS.forEach(b => {
+  b.variants.forEach(vid => {
+    const vdef = VARIANTS.find(v=>v.id===vid);
+    UTA_CARDS.push({
+      uid: b.id+'_'+vid,
+      baseId: b.id,
+      variantId: vid,
+      num: b.num,
+      name: b.name,
+      set: b.set,
+      rarity: b.rarity,
+      date: b.date,
+      emoji: b.emoji,
+      color: b.color,
+      vdef,
+    });
+  });
+});
+
+// ownedSet: Set of uid strings
+let ownedSet = new Set();
+let dupMap = {};
+
+function loadStorage(){
+  try{
+    const o = localStorage.getItem('uta-owned-v2');
+    const d = localStorage.getItem('uta-dups-v2');
+    if(o) ownedSet = new Set(JSON.parse(o));
+    if(d) dupMap = JSON.parse(d);
+  }catch(e){}
+}
+function saveStorage(){
+  try{
+    localStorage.setItem('uta-owned-v2', JSON.stringify([...ownedSet]));
+    localStorage.setItem('uta-dups-v2', JSON.stringify(dupMap));
+  }catch(e){}
+}
+
+function rc(r){ return 'rbadge r-'+(r||'C'); }
+function cardBg(card){
+  const m={L:'#0D47A1',C:'#2E7D32',UC:'#6A1B9A',R:'#E65100',SR:'#8B0000',SEC:'#880E4F',SP:'#4A148C',OP:'#1B5E20',SA:'#065f46'};
+  return m[card.rarity]||'#333';
+}
+
+function renderCardItem(card, mode){
+  const uid = card.uid;
+  const owned = ownedSet.has(uid);
+  const dup = dupMap[uid]||0;
+  const cls = owned?'owned':(mode==='missing'?'missing-card':'');
+  const vCls = card.variantId!=='normal'?'v-'+card.variantId:'';
+  const sheen = card.vdef.sheen?`<div class="${card.vdef.sheen}"></div>`:'';
+  return `
+  <div class="card-item ${cls} ${vCls}" onclick="showModal('${uid}')">
+    ${owned?`<div class="owned-mark"><i class="ti ti-check"></i></div>`:''}
+    ${dup>0?`<div class="dup-badge">×${dup+1}</div>`:''}
+    <div class="card-img" style="background:${cardBg(card)}22">
+      ${sheen}
+      <div class="card-img-inner">
+        <span style="font-size:36px">${card.emoji}</span>
+        <span style="font-size:9px;color:#fff9;font-family:'Cinzel',serif">${card.rarity}</span>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="card-num">${card.num}</div>
+      <div class="card-name">${card.name}</div>
+      <div class="card-set">${card.set}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">
+        <span class="${rc(card.rarity)}">${card.rarity}</span>
+        <span class="vbadge ${card.vdef.cls}">${card.vdef.icon} ${card.vdef.label}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showModal(uid){
+  const card = UTA_CARDS.find(c=>c.uid===uid);
+  if(!card) return;
+  const owned = ownedSet.has(uid);
+  const dup = dupMap[uid]||0;
+  document.getElementById('modal-overlay')?.remove();
+  const el = document.createElement('div');
+  el.className='modal-overlay'; el.id='modal-overlay';
+  const sheen = card.vdef.sheen?`<div class="${card.vdef.sheen}" style="position:absolute;inset:0"></div>`:'';
+  el.innerHTML=`
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">${card.name}</span>
+      <button class="btn btn-s" onclick="closeModal()" style="padding:6px 10px"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-img" style="background:${cardBg(card)}33;border:1px solid ${cardBg(card)}55">
+        ${sheen}<span style="font-size:56px;position:relative">${card.emoji}</span>
+      </div>
+      <div class="modal-row"><span class="modal-key">Card Number</span><span class="modal-val" style="font-family:'Cinzel',serif">${card.num}</span></div>
+      <div class="modal-row"><span class="modal-key">ชุดการ์ด</span><span class="modal-val">${card.set}</span></div>
+      <div class="modal-row"><span class="modal-key">ความหายาก</span><span class="modal-val"><span class="${rc(card.rarity)}">${card.rarity}</span></span></div>
+      <div class="modal-row"><span class="modal-key">Variant</span><span class="modal-val"><span class="vbadge ${card.vdef.cls}">${card.vdef.icon} ${card.vdef.label}</span></span></div>
+      <div class="modal-row"><span class="modal-key">วันที่วางจำหน่าย</span><span class="modal-val">${card.date}</span></div>
+      <div class="modal-row"><span class="modal-key">สถานะ</span><span class="modal-val" style="color:${owned?'#D4AF37':'#888'}">${owned?'✓ มีแล้ว':'ยังไม่มี'}</span></div>
+      ${dup>0?`<div class="modal-row"><span class="modal-key">การ์ดซ้ำ</span><span class="modal-val" style="color:#FF6B7A">${dup} ใบ</span></div>`:''}
+      <div style="display:flex;gap:8px;margin-top:16px">
+        ${owned
+          ?`<button class="btn btn-s" style="flex:1" onclick="removeCard('${uid}')"><i class="ti ti-minus"></i> นำออก</button>`
+          :`<button class="btn btn-g" style="flex:1" onclick="addCard('${uid}')"><i class="ti ti-plus"></i> เพิ่มในคอลเลกชัน</button>`}
+        <button class="btn btn-s" onclick="closeModal()" style="padding:10px 14px"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+  el.addEventListener('click',e=>{if(e.target===el)closeModal();});
+}
+function closeModal(){ document.getElementById('modal-overlay')?.remove(); }
+
+function addCard(uid){
+  if(ownedSet.has(uid)){
+    dupMap[uid]=(dupMap[uid]||0)+1;
+    showToast('⚠️ การ์ดซ้ำ! บันทึกแล้ว','warning');
+  } else {
+    ownedSet.add(uid);
+    showToast('✓ เพิ่มการ์ดในคอลเลกชันแล้ว','success');
+  }
+  saveStorage(); closeModal(); refreshCurrentPage();
+}
+function removeCard(uid){
+  ownedSet.delete(uid);
+  delete dupMap[uid];
+  saveStorage();
+  showToast('ลบการ์ดออกแล้ว','warning');
+  closeModal(); refreshCurrentPage();
+}
+
+let currentPage='dashboard';
+function refreshCurrentPage(){ showPage(currentPage,true); }
+
+function showPage(page, noNav){
+  ['dashboard','collection','missing','upload'].forEach(p=>{
+    document.getElementById('page-'+p).style.display=p===page?'block':'none';
+    document.getElementById('nav-'+p).classList.toggle('active',p===page);
+  });
+  currentPage=page;
+  if(page==='dashboard') renderDashboard();
+  else if(page==='collection') renderCollection();
+  else if(page==='missing') renderMissing();
+  else if(page==='upload') renderUpload();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+  const total = UTA_CARDS.length;
+  const owned = ownedSet.size;
+  const missing = total - owned;
+  const pct = Math.round(owned/total*100);
+  const dups = Object.values(dupMap).reduce((a,b)=>a+b,0);
+  const totalBase = BASE_CARDS.length;
+  const ownedBase = new Set([...ownedSet].map(uid=>uid.split('_')[0])).size;
+
+  // variant breakdown
+  const varStats = {};
+  VARIANTS.forEach(v=>{ varStats[v.id]={total:0,owned:0,label:v.label,icon:v.icon,cls:v.cls}; });
+  UTA_CARDS.forEach(c=>{
+    varStats[c.variantId].total++;
+    if(ownedSet.has(c.uid)) varStats[c.variantId].owned++;
+  });
+
+  const varRows = VARIANTS.map(v=>{
+    const s = varStats[v.id];
+    const p = Math.round(s.owned/s.total*100);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span class="vbadge ${v.cls}" style="min-width:100px">${v.icon} ${v.label}</span>
+      <div style="flex:1"><div style="background:var(--bg4);border-radius:999px;height:4px;overflow:hidden">
+        <div style="width:${p}%;height:100%;background:var(--gold);border-radius:999px"></div>
+      </div></div>
+      <span style="font-size:12px;color:var(--text3);min-width:44px;text-align:right">${s.owned}/${s.total}</span>
+    </div>`;
+  }).join('');
+
+  const recent = [...ownedSet].slice(-6).reverse().map(uid=>UTA_CARDS.find(c=>c.uid===uid)).filter(Boolean);
+
+  document.getElementById('page-dashboard').innerHTML=`
+  <div class="stats-grid">
+    <div class="stat-card" style="--accent:var(--text3)">
+      <div class="stat-label">Variants ทั้งหมด</div>
+      <div class="stat-num">${total}</div>
+      <div class="stat-sub">${totalBase} base cards</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--gold)">
+      <div class="stat-label">มีแล้ว</div>
+      <div class="stat-num" style="color:var(--gold)">${owned}</div>
+      <div class="stat-sub">${ownedBase} base cards</div>
+    </div>
+    <div class="stat-card" style="--accent:#FF6B7A">
+      <div class="stat-label">ยังขาด</div>
+      <div class="stat-num" style="color:#FF6B7A">${missing}</div>
+      <div class="stat-sub">variants</div>
+    </div>
+    <div class="stat-card" style="--accent:#CE93D8">
+      <div class="stat-label">การ์ดซ้ำ</div>
+      <div class="stat-num" style="color:#CE93D8">${dups}</div>
+      <div class="stat-sub">ใบที่ซ้ำ</div>
+    </div>
+  </div>
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-title">ความสมบูรณ์ของคอลเลกชัน</span>
+      <span class="progress-pct">${pct}%</span>
+    </div>
+    <div class="pbar-bg"><div class="pbar-fill" id="prog-bar" style="width:0%"></div></div>
+    <div class="pbar-labels"><span>${owned} variants</span><span>เป้าหมาย: ${total} variants</span></div>
+  </div>
+  <div class="section-title">ความคืบหน้าแยกตาม Variant</div>
+  <div class="analysis-card">${varRows}</div>
+  <div class="section-title">การ์ดล่าสุดที่เพิ่ม</div>
+  ${recent.length
+    ?`<div class="card-grid">${recent.map(c=>renderCardItem(c,'collection')).join('')}</div>`
+    :`<div class="empty-state"><i class="ti ti-mood-empty"></i><p>ยังไม่มีการ์ด<br>คลิกการ์ดในหน้า "คอลเลกชัน" เพื่อเพิ่ม</p></div>`}`;
+  setTimeout(()=>{ document.getElementById('prog-bar').style.width=pct+'%'; },100);
+}
+
+// ===== COLLECTION =====
+let cf={search:'',rarity:'',variant:'',set:''};
+function renderCollection(){
+  const sets=[...new Set(UTA_CARDS.map(c=>c.set))];
+  const rarities=[...new Set(UTA_CARDS.map(c=>c.rarity))];
+  let filtered=UTA_CARDS.filter(c=>{
+    const s=cf.search.toLowerCase();
+    if(s&&!c.num.toLowerCase().includes(s)&&!c.name.toLowerCase().includes(s)) return false;
+    if(cf.rarity&&c.rarity!==cf.rarity) return false;
+    if(cf.variant&&c.variantId!==cf.variant) return false;
+    if(cf.set&&c.set!==cf.set) return false;
+    return true;
+  });
+  document.getElementById('page-collection').innerHTML=`
+  <div class="section-title">คอลเลกชัน (${ownedSet.size}/${UTA_CARDS.length} variants)</div>
+  <div class="filter-row">
+    <input class="fi" placeholder="ค้นหารหัสหรือชื่อ..." value="${cf.search}" oninput="cf.search=this.value;renderCollection()">
+    <select class="fi" onchange="cf.rarity=this.value;renderCollection()">
+      <option value="">ทุก Rarity</option>
+      ${rarities.map(r=>`<option value="${r}" ${cf.rarity===r?'selected':''}>${r}</option>`).join('')}
+    </select>
+    <select class="fi" onchange="cf.variant=this.value;renderCollection()">
+      <option value="">ทุก Variant</option>
+      ${VARIANTS.map(v=>`<option value="${v.id}" ${cf.variant===v.id?'selected':''}>${v.icon} ${v.label}</option>`).join('')}
+    </select>
+    <select class="fi" onchange="cf.set=this.value;renderCollection()">
+      <option value="">ทุก Set</option>
+      ${sets.map(s=>`<option value="${s}" ${cf.set===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+  </div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:12px">แสดง ${filtered.length} variants · มีแล้ว ${filtered.filter(c=>ownedSet.has(c.uid)).length} ใบ</div>
+  <div class="card-grid">${filtered.map(c=>renderCardItem(c,'collection')).join('')}</div>`;
+}
+
+// ===== MISSING =====
+function renderMissing(){
+  const missing=UTA_CARDS.filter(c=>!ownedSet.has(c.uid));
+  const byVariant={};
+  VARIANTS.forEach(v=>{ byVariant[v.id]=[]; });
+  missing.forEach(c=>{ if(byVariant[c.variantId]) byVariant[c.variantId].push(c); });
+
+  let html=`<div class="section-title">การ์ดที่ยังขาด (${missing.length} variants)</div>`;
+  if(!missing.length){
+    html+=`<div style="text-align:center;padding:60px;color:var(--gold)">
+      <i class="ti ti-trophy" style="font-size:64px;display:block;margin-bottom:16px"></i>
+      <span style="font-family:'Cinzel',serif;font-size:18px">Master Collection!</span>
+      <p style="margin-top:8px;color:var(--text3)">คุณมีการ์ด Uta ครบทุก variant แล้ว!</p></div>`;
+  }
+  VARIANTS.forEach(v=>{
+    const cards=byVariant[v.id];
+    if(!cards||!cards.length) return;
+    html+=`<div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span class="vbadge ${v.cls}">${v.icon} ${v.label}</span>
+        <span style="font-size:12px;color:var(--text3)">${cards.length} ใบที่ยังขาด</span>
+      </div>
+      <div class="card-grid">${cards.map(c=>renderCardItem(c,'missing')).join('')}</div>
+    </div>`;
+  });
+  document.getElementById('page-missing').innerHTML=html;
+}
+
+// ===== UPLOAD =====
+function renderUpload(){
+  const baseOpts=BASE_CARDS.map(b=>`<option value="${b.id}">${b.num} — ${b.name} (${b.rarity})</option>`).join('');
+  const varOpts=VARIANTS.map(v=>`<option value="${v.id}">${v.icon} ${v.label}</option>`).join('');
+  document.getElementById('page-upload').innerHTML=`
+  <div class="section-title">อัปโหลดและวิเคราะห์การ์ดด้วย AI</div>
+  <div class="upload-area" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+    <div style="font-size:48px;color:var(--text3);margin-bottom:12px"><i class="ti ti-photo-up"></i></div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:4px">คลิกหรือลากไฟล์รูปการ์ดมาวางที่นี่</div>
+    <div style="font-size:12px;color:var(--text3)">รองรับ JPG, PNG, WEBP · Claude AI วิเคราะห์อัตโนมัติ</div>
+  </div>
+  <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+  <div id="upload-result"></div>
+  <div class="section-title">เพิ่มการ์ดด้วยตนเอง</div>
+  <div class="analysis-card">
+    <div class="analysis-grid">
+      <div>
+        <div class="analysis-label" style="margin-bottom:6px">เลือกการ์ด</div>
+        <select class="fi" id="manual-base" style="width:100%">${baseOpts}</select>
+      </div>
+      <div>
+        <div class="analysis-label" style="margin-bottom:6px">เลือก Variant</div>
+        <select class="fi" id="manual-var" style="width:100%">${varOpts}</select>
+      </div>
+    </div>
+    <div id="manual-preview" style="margin:8px 0;font-size:12px;color:var(--text3)"></div>
+    <button class="btn btn-g" onclick="manualAdd()"><i class="ti ti-plus"></i> เพิ่มในคอลเลกชัน</button>
+  </div>`;
+}
+
+function manualAdd(){
+  const baseId=document.getElementById('manual-base').value;
+  const varId=document.getElementById('manual-var').value;
+  const uid=baseId+'_'+varId;
+  const card=UTA_CARDS.find(c=>c.uid===uid);
+  if(!card){ showToast('ไม่มี variant นี้สำหรับการ์ดดังกล่าว','warning'); return; }
+  addCard(uid);
+  renderUpload();
+}
+
+async function handleFileSelect(e){ const f=e.target.files[0]; if(f) await analyzeCard(f); }
+async function handleDrop(e){
+  e.preventDefault();
+  document.querySelector('.upload-area')?.classList.remove('drag');
+  const f=e.dataTransfer.files[0]; if(f) await analyzeCard(f);
+}
+
+async function analyzeCard(file){
+  const rd=document.getElementById('upload-result'); if(!rd) return;
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    const b64=e.target.result.split(',')[1]; const imgSrc=e.target.result;
+    rd.innerHTML=`<div class="alert ai2"><i class="ti ti-robot"></i> กำลังส่งรูปให้ Claude AI วิเคราะห์...</div>
+    <div class="ai-pulse"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
+    <span style="font-size:13px;color:var(--text2)">กำลังอ่านข้อมูลบนการ์ด...</span></div>`;
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:b64}},
+          {type:'text',text:'Analyze this One Piece card game card image. Extract: card number (like OP03-097), card name, set name, rarity (L/C/UC/R/SR/SEC/SP/OP/SA), and variant type (normal=regular print, foil=parallel foil/shiny, parallel=parallel non-foil, trr=treasure rare, sa=special anniversary). Return ONLY valid JSON: {"cardNumber":"","cardName":"","setName":"","rarity":"","variant":"normal","confidence":"high/medium/low"}. If not a card: {"error":"not a card"}.'}
+        ]}]
+      })});
+      const data=await res.json();
+      const text=data.content?.map(i=>i.text||'').join('')||'';
+      let parsed; try{parsed=JSON.parse(text.replace(/```json|```/g,'').trim());}catch(e){parsed={error:'parse'};}
+      if(parsed.error){rd.innerHTML=`<div class="alert aw"><i class="ti ti-alert-triangle"></i> ไม่พบข้อมูลการ์ด One Piece ในรูปนี้</div>`;return;}
+      const vid=parsed.variant||'normal';
+      const matched=UTA_CARDS.find(c=>
+        (c.num.toLowerCase()===(parsed.cardNumber||'').toLowerCase()||(parsed.cardName&&c.name.toLowerCase().includes(parsed.cardName.toLowerCase())))
+        &&c.variantId===vid
+      )||UTA_CARDS.find(c=>c.num.toLowerCase()===(parsed.cardNumber||'').toLowerCase());
+      const vdef=VARIANTS.find(v=>v.id===vid)||VARIANTS[0];
+      rd.innerHTML=`
+      <div class="alert as"><i class="ti ti-check"></i> วิเคราะห์สำเร็จ!</div>
+      <div class="analysis-card">
+        <div class="analysis-img"><img src="${imgSrc}" style="width:100%;height:100%;object-fit:contain;border-radius:6px" alt="การ์ด"></div>
+        <div class="analysis-grid">
+          <div><div class="analysis-label">Card Number</div><div class="analysis-val">${parsed.cardNumber||'ไม่พบ'}</div></div>
+          <div><div class="analysis-label">ชื่อการ์ด</div><div class="analysis-val">${parsed.cardName||'ไม่พบ'}</div></div>
+          <div><div class="analysis-label">ความหายาก</div><div class="analysis-val"><span class="${rc(parsed.rarity)}">${parsed.rarity||'?'}</span></div></div>
+          <div><div class="analysis-label">Variant</div><div class="analysis-val"><span class="vbadge ${vdef.cls}">${vdef.icon} ${vdef.label}</span></div></div>
+        </div>
+        ${matched?`
+        <div class="alert as" style="margin-top:8px"><i class="ti ti-database"></i> พบในฐานข้อมูล: <strong>${matched.name}</strong> · ${matched.vdef.label} ${ownedSet.has(matched.uid)?'— จะบันทึกเป็นการ์ดซ้ำ':''}</div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-g" onclick="addCard('${matched.uid}');renderUpload()"><i class="ti ti-check"></i> ยืนยันเพิ่ม</button>
+          <button class="btn btn-s" onclick="renderUpload()"><i class="ti ti-x"></i> ยกเลิก</button>
+        </div>`
+        :`<div class="alert aw" style="margin-top:8px"><i class="ti ti-alert-triangle"></i> ไม่พบในฐานข้อมูล Uta</div>`}
+      </div>`;
+    }catch(err){rd.innerHTML=`<div class="alert aw"><i class="ti ti-wifi-off"></i> ไม่สามารถเชื่อมต่อ AI ได้</div>`;}
+  };
+  reader.readAsDataURL(file);
+}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+loadStorage();
+renderDashboard();
+</script>
+</body>
+</html>
